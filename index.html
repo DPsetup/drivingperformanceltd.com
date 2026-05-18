@@ -112,27 +112,6 @@ const G = '#fff';
 
 const EVENTS = [
   {
-    id: 'autumn-feast',
-    title: 'Autumn Feast',
-    sub: 'A Luxury Dining Experience',
-    cat: 'Exclusive Dining',
-    date: 'Friday, 6 November 2026',
-    loc: 'Secluded Surrey Location',
-    locDetail: 'Disclosed Upon Booking',
-    dur: '1 Evening',
-    size: 'Up to 16 Guests',
-    inc: 'Five-Course Dinner & Fine Wines',
-    price: '300',
-    badge: 'Limited Places',
-    badgeColor: 'rgba(255,255,255,0.08)',
-    badgeTxt: '#fff',
-    badgeBorder: 'rgba(255,255,255,0.45)',
-    desc: 'Gather around the table in a quintessentially British setting as the season turns. A beautifully curated evening for Driving Performance guests to unwind, reflect on the extraordinary events of the year, and celebrate the memories made — over a five-course dinner with exceptional wines and fine company.',
-    grad: 'linear-gradient(160deg,#0a0a08 0%,#141210 50%,#0a0a08 100%)',
-    bgWord: 'FEAST',
-    img: 'pub 1.jpg',
-  },
-  {
     id: 'ice',
     title: 'Ice Driving',
     sub: 'Arctic Finland',
@@ -151,6 +130,13 @@ const EVENTS = [
     grad: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
     bgWord: 'ICE',
     img: 'ice driving 1.jpg',
+    limitedNote: 'This highly exclusive itinerary is strictly limited to up to 16 guests, ensuring an intimate and highly personalised environment from arrival to departure.',
+    bullets: [
+      'Private VIP transfers and welcome reception upon arrival.',
+      'Exclusive access to premium enclosures and private hospitality suites.',
+      'Five-star accommodation and curated evening dining experiences.',
+      'Dedicated concierge and expert hosts on hand 24/7.',
+    ],
     packages: [
       { label: '1 Driver', price: '6,095.00' },
       { label: '1 Driver & 1 Non-Driver', price: '8,095.00' },
@@ -176,6 +162,13 @@ const EVENTS = [
     grad: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
     bgWord: 'MCO',
     img: 'Monaco 1.jpg',
+    limitedNote: 'This highly exclusive itinerary is strictly limited to up to 16 guests, ensuring an intimate and highly personalised environment from arrival to departure.',
+    bullets: [
+      'Private VIP transfers and welcome reception upon arrival.',
+      'Exclusive access to premium enclosures and private hospitality suites.',
+      'Five-star accommodation and curated evening dining experiences.',
+      'Dedicated concierge and expert hosts on hand 24/7.',
+    ],
   },
   {
     id: 'goodwood',
@@ -196,6 +189,39 @@ const EVENTS = [
     grad: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
     bgWord: 'GDW',
     img: 'Revival 1.jpg',
+    limitedNote: 'This highly exclusive itinerary is limited to a select number of places, ensuring an intimate and highly personalised environment from arrival to departure.',
+    bullets: [
+      'Exclusive access to premium enclosures and private hospitality suites.',
+      'Dedicated concierge and expert hosts on hand 24/7.',
+    ],
+  },
+  {
+    id: 'autumn-feast',
+    title: 'Autumn Feast',
+    sub: 'A Luxury Dining Experience',
+    cat: 'Exclusive Dining',
+    date: 'Friday, 29th October 2027',
+    loc: 'Secluded Surrey Location',
+    locDetail: 'Disclosed Upon Booking',
+    dur: '1 Evening',
+    size: 'Up to 16 Guests',
+    inc: 'Five-Course Dinner & Fine Wines',
+    price: '300',
+    badge: 'Limited Places',
+    badgeColor: 'rgba(255,255,255,0.08)',
+    badgeTxt: '#fff',
+    badgeBorder: 'rgba(255,255,255,0.45)',
+    desc: 'Gather around the table in a quintessentially British setting as the season turns. A beautifully curated evening for Driving Performance guests to unwind, reflect on the extraordinary events of the year, and celebrate the memories made — over a five-course dinner with exceptional wines and fine company.',
+    grad: 'linear-gradient(160deg,#0a0a08 0%,#141210 50%,#0a0a08 100%)',
+    bgWord: 'FEAST',
+    img: 'pub 1.jpg',
+    limitedNote: 'This highly exclusive itinerary is strictly limited to up to 16 guests, ensuring an intimate and highly personalised environment from arrival to departure.',
+    bullets: [
+      'Private VIP transfers and welcome reception upon arrival.',
+      'Exclusive access to premium enclosures and private hospitality suites.',
+      'Five-star accommodation and curated evening dining experiences.',
+      'Dedicated concierge and expert hosts on hand 24/7.',
+    ],
   },
 ];
 
@@ -405,7 +431,7 @@ function HomePage({ setPage }) {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-          {[['50+','Years of Experience in Designing & Delivering Luxury Experiences'],['20','Guests Maximum Per Event, Ensuring Bespoke & Luxury Standards at Every Moment'],['4','Scheduled Events Per Year'],['1','Goal on Every Event. Sign Up to Find Out.']].map(([n, l]) => (
+          {[['60+','Years of Experience in Designing & Delivering Luxury Experiences'],['20','Guests Maximum Per Event, Ensuring Bespoke & Luxury Standards at Every Moment'],['4','Scheduled Events Per Year'],['1','Goal on Every Event. Sign Up to Find Out.']].map(([n, l]) => (
             <div key={l} style={{ background: '#0C0C0C', border: '1px solid rgba(255,255,255,0.045)', padding: '40px 30px' }}>
               <div style={{ fontSize: 42, fontWeight: 100, color: '#fff', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: 10 }}>{n}</div>
               <div style={{ fontSize: 11, fontWeight: 400, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.52)' }}>{l}</div>
@@ -717,16 +743,11 @@ function EventDetail({ ev, setPage }) {
 
           <h2 style={{ fontSize: 26, fontWeight: 200, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 32 }}>About The Experience</h2>
           <p style={{ fontSize: 16, fontWeight: 300, color: 'rgba(255,255,255,0.8)', lineHeight: 1.9, marginBottom: 24 }}>{ev.desc}</p>
-          <p style={{ fontSize: 16, fontWeight: 300, color: 'rgba(255,255,255,0.8)', lineHeight: 1.9, marginBottom: 60 }}>This highly exclusive itinerary is strictly limited to up to 16 guests, ensuring an intimate and highly personalised environment from arrival to departure.</p>
+          {ev.limitedNote && <p style={{ fontSize: 16, fontWeight: 300, color: 'rgba(255,255,255,0.8)', lineHeight: 1.9, marginBottom: 60 }}>{ev.limitedNote}</p>}
 
           <h2 style={{ fontSize: 26, fontWeight: 200, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 32 }}>Itinerary Highlights</h2>
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {[
-              'Private VIP transfers and welcome reception upon arrival.', 
-              'Exclusive access to premium enclosures and private hospitality suites.', 
-              'Five-star accommodation and curated evening dining experiences.', 
-              'Dedicated concierge and expert hosts on hand 24/7.'
-            ].map((item, i) => (
+            {(ev.bullets || []).map((item, i) => (
               <li key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <span style={{ color: '#fff', fontSize: 14, marginTop: 4 }}>✦</span>
                 <span style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>{item}</span>
@@ -793,12 +814,28 @@ function EventDetail({ ev, setPage }) {
           </div>
 
           {ev.packages ? (
-            <button onClick={handleAddToBasket} className="btn-gold" style={{
-              width: '100%', background: basketAdded ? 'rgba(255,255,255,0.95)' : '#fff', color: '#000', border: 'none',
-              padding: '18px 0', fontSize: 12, fontWeight: 600,
-              letterSpacing: '0.3em', textTransform: 'uppercase',
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.3s',
-            }}>{basketAdded ? '✓  Added to Basket' : 'Add to Basket'}</button>
+            selectedPkg.label === '1 Driver' ? (
+              <a href="https://buy.stripe.com/test_3cI00i526gOP8CSeoVe7m00" target="_blank" rel="noopener noreferrer" className="btn-gold" style={{
+                display: 'block', width: '100%', background: '#fff', color: '#000', border: 'none',
+                padding: '18px 0', fontSize: 12, fontWeight: 600,
+                letterSpacing: '0.3em', textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', textAlign: 'center',
+              }}>Buy Now</a>
+            ) : selectedPkg.label === '1 Driver & 1 Non-Driver' ? (
+              <a href="https://buy.stripe.com/test_eVq3cufGKaqrg5k80xe7m02" target="_blank" rel="noopener noreferrer" className="btn-gold" style={{
+                display: 'block', width: '100%', background: '#fff', color: '#000', border: 'none',
+                padding: '18px 0', fontSize: 12, fontWeight: 600,
+                letterSpacing: '0.3em', textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', textAlign: 'center',
+              }}>Buy Now</a>
+            ) : (
+              <a href="https://buy.stripe.com/test_eVq6oGbqudCD5qG1C9e7m03" target="_blank" rel="noopener noreferrer" className="btn-gold" style={{
+                display: 'block', width: '100%', background: '#fff', color: '#000', border: 'none',
+                padding: '18px 0', fontSize: 12, fontWeight: 600,
+                letterSpacing: '0.3em', textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', textAlign: 'center',
+              }}>Buy Now</a>
+            )
           ) : (
             <button className="btn-gold" style={{
               width: '100%', background: '#fff', color: '#000', border: 'none',
