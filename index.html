@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Driving Performance</title>
+  <link rel="icon" type="image/png" href="Logo.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -153,7 +154,8 @@ const EVENTS = [
     dur: '4 Days / 5 Nights',
     size: 'Up to 12 Guests',
     inc: 'Superyacht & VIP Access',
-    price: '12,500',
+    price: 'POA',
+    enquire: true,
     badge: 'Selling Fast',
     badgeColor: 'rgba(255,255,255,0.08)',
     badgeTxt: '#fff',
@@ -180,7 +182,8 @@ const EVENTS = [
     dur: '3 Days / 3 Nights',
     size: 'Up to 20 Guests',
     inc: 'Country House Hotel & VIP',
-    price: '2,200',
+    price: 'POA',
+    enquire: true,
     badge: 'Early Access',
     badgeColor: 'rgba(255,255,255,0.08)',
     badgeTxt: '#fff',
@@ -215,6 +218,7 @@ const EVENTS = [
     grad: 'linear-gradient(160deg,#0a0a08 0%,#141210 50%,#0a0a08 100%)',
     bgWord: 'FEAST',
     img: 'pub 1.jpg',
+    stripeUrl: 'https://buy.stripe.com/test_5kQcN466a6abcT894Be7m04',
     limitedNote: 'This highly exclusive itinerary is strictly limited to up to 16 guests, ensuring an intimate and highly personalised environment from arrival to departure.',
     bullets: [
       'Private VIP transfers and welcome reception upon arrival.',
@@ -262,7 +266,7 @@ function Navbar({ page, setPage, scrolled }) {
           background: 'none', border: 'none', cursor: 'pointer', padding: 0,
           display: 'flex', alignItems: 'center',
         }}>
-          <DPLogo height={128} />
+          <DPLogo height={90} />
         </button>
       </div>
     </nav>
@@ -282,7 +286,7 @@ const Eyebrow = ({ children }) => (
 function DPLogo({ height = 40, opacity = 1 }) {
   return (
     <img
-      src="logo.png"
+      src="Logo.png"
       alt="Driving Performance"
       style={{ 
         height, 
@@ -500,7 +504,7 @@ function HomePage({ setPage }) {
                 <div style={{ padding: '22px 24px 26px' }}>
                   <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.42em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', marginBottom: 7 }}>{ev.cat}</p>
                   <h3 style={{ fontSize: 17, fontWeight: 200, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>{ev.title}</h3>
-                  <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.53)', letterSpacing: '0.04em' }}>From £{ev.price} per person</p>
+                  <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.53)', letterSpacing: '0.04em' }}>{ev.price === 'POA' ? 'Price on application' : `From £${ev.price} per person`}</p>
                 </div>
               </div>
             ))}
@@ -699,10 +703,31 @@ function EventDetail({ ev, setPage }) {
   const defaultPkg = ev.packages ? ev.packages[0] : null;
   const [selectedPkg, setSelectedPkg] = useState(defaultPkg);
   const [basketAdded, setBasketAdded] = useState(false);
+  const [showEnquiry, setShowEnquiry] = useState(false);
+  const [enquiryForm, setEnquiryForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [enquirySent, setEnquirySent] = useState(false);
 
   const handleAddToBasket = () => {
     setBasketAdded(true);
     setTimeout(() => setBasketAdded(false), 3000);
+  };
+
+  const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xvzyoyye';
+
+  const handleEnquirySubmit = (e) => {
+    e.preventDefault();
+    fetch(FORMSPREE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...enquiryForm, event: ev.title }),
+    })
+      .then(res => {
+        if (res.ok) {
+          setEnquirySent(true);
+          setTimeout(() => { setEnquirySent(false); setShowEnquiry(false); setEnquiryForm({ name: '', email: '', phone: '', message: '' }); }, 3000);
+        }
+      })
+      .catch(() => {});
   };
 
   const displayPrice = ev.packages ? selectedPkg.price : ev.price;
@@ -765,9 +790,13 @@ function EventDetail({ ev, setPage }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
             <div>
               <span style={{ display: 'block', fontSize: 12, fontWeight: 400, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>Reserve Your Place</span>
-              <span style={{ fontSize: 34, fontWeight: 100, color: '#fff', letterSpacing: '0.02em' }}>
-                <sup style={{ fontSize: 18, fontWeight: 300, color: 'rgba(255,255,255,0.7)', verticalAlign: 'super' }}>£</sup>{displayPrice}
-              </span>
+              {displayPrice === 'POA' ? (
+                <span style={{ fontSize: 34, fontWeight: 100, color: '#fff', letterSpacing: '0.05em' }}>POA</span>
+              ) : (
+                <span style={{ fontSize: 34, fontWeight: 100, color: '#fff', letterSpacing: '0.02em' }}>
+                  <sup style={{ fontSize: 18, fontWeight: 300, color: 'rgba(255,255,255,0.7)', verticalAlign: 'super' }}>£</sup>{displayPrice}
+                </span>
+              )}
             </div>
           </div>
 
@@ -836,21 +865,79 @@ function EventDetail({ ev, setPage }) {
                 cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', textAlign: 'center',
               }}>Buy Now</a>
             )
+          ) : ev.stripeUrl ? (
+            <a href={ev.stripeUrl} target="_blank" rel="noopener noreferrer" className="btn-gold" style={{
+              display: 'block', width: '100%', background: '#fff', color: '#000', border: 'none',
+              padding: '18px 0', fontSize: 12, fontWeight: 600,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', textAlign: 'center',
+            }}>Buy Now</a>
           ) : (
-            <button className="btn-gold" style={{
+            <button onClick={() => ev.enquire && setShowEnquiry(true)} className="btn-gold" style={{
               width: '100%', background: '#fff', color: '#000', border: 'none',
               padding: '18px 0', fontSize: 12, fontWeight: 600,
               letterSpacing: '0.3em', textTransform: 'uppercase',
               cursor: 'pointer', fontFamily: 'inherit',
-            }}>Proceed to Booking</button>
+            }}>{ev.enquire ? 'Enquire Now' : 'Proceed to Booking'}</button>
           )}
 
-          <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 16, letterSpacing: '0.05em' }}>Secure payment processing module placeholder.</p>
+          <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 16, letterSpacing: '0.05em' }}>
+            {ev.enquire ? 'Our team will be in touch within 24 hours.' : 'Secure payment processing.'}
+          </p>
         </div>
         </div>
       </section>
 
       <Footer setPage={setPage} />
+
+      {/* Enquiry Modal */}
+      {showEnquiry && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div onClick={() => setShowEnquiry(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }} />
+          <div style={{ position: 'relative', background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.1)', padding: 48, width: '100%', maxWidth: 520 }}>
+            <button onClick={() => setShowEnquiry(false)} style={{ position: 'absolute', top: 20, right: 24, background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 22, cursor: 'pointer', fontFamily: 'inherit', lineHeight: 1 }}>✕</button>
+            {enquirySent ? (
+              <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                <p style={{ fontSize: 13, fontWeight: 400, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#fff', marginBottom: 12 }}>Enquiry Received</p>
+                <p style={{ fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7 }}>Thank you. Our team will be in touch within 24 hours.</p>
+              </div>
+            ) : (
+              <>
+                <h3 style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>Monaco Grand Prix</h3>
+                <h2 style={{ fontSize: 22, fontWeight: 200, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 32 }}>Make an Enquiry</h2>
+                <form onSubmit={handleEnquirySubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {[['name','Full Name','text',true],['email','Email Address','email',true],['phone','Phone Number','tel',false]].map(([field, label, type, required]) => (
+                    <div key={field}>
+                      <label style={{ display: 'block', fontSize: 10, fontWeight: 500, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>{label}{required ? ' *' : ''}</label>
+                      <input
+                        type={type}
+                        required={required}
+                        value={enquiryForm[field]}
+                        onChange={(e) => setEnquiryForm(f => ({ ...f, [field]: e.target.value }))}
+                        style={{ width: '100%', background: '#111', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '12px 14px', fontSize: 14, fontWeight: 300, outline: 'none', fontFamily: 'inherit', borderRadius: 0 }}
+                        onFocus={(e) => e.target.style.borderColor = '#fff'}
+                        onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label style={{ display: 'block', fontSize: 10, fontWeight: 500, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Message</label>
+                    <textarea
+                      rows={4}
+                      value={enquiryForm.message}
+                      onChange={(e) => setEnquiryForm(f => ({ ...f, message: e.target.value }))}
+                      style={{ width: '100%', background: '#111', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '12px 14px', fontSize: 14, fontWeight: 300, outline: 'none', fontFamily: 'inherit', borderRadius: 0, resize: 'vertical' }}
+                      onFocus={(e) => e.target.style.borderColor = '#fff'}
+                      onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.2)'}
+                    />
+                  </div>
+                  <button type="submit" style={{ width: '100%', background: '#fff', color: '#000', border: 'none', padding: '16px 0', fontSize: 11, fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', marginTop: 8 }}>Submit Enquiry</button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1014,7 +1101,9 @@ function ContactPage({ setPage }) {
           ].map(([k, v]) => (
             <div key={k} style={{ marginBottom: 28 }}>
               <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: 7 }}>{k}</p>
-              <p style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.95)', letterSpacing: '0.04em', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{v}</p>
+              <p style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.95)', letterSpacing: '0.04em', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+                {k === 'Email' ? <a href={`mailto:${v}`} style={{ color: 'rgba(255,255,255,0.95)', textDecoration: 'underline', textUnderlineOffset: 3 }}>{v}</a> : v}
+              </p>
             </div>
           ))}
 
