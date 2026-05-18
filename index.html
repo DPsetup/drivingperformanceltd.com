@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Driving Performance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Montserrat', 'Helvetica Neue', 'Arial', 'sans-serif'] },
+          colors: { gold: '#fff' },
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #000; color: #fff; font-family: 'Montserrat', 'Helvetica Neue', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.55); }
+
+    /* Grid texture */
+    .grid-tex {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 80px 80px;
+    }
+
+    /* Marquee */
+    @keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .marquee-run { animation: marqueeScroll 38s linear infinite; }
+
+    /* Hero fade-ups */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    .fu1 { animation: fadeUp 1s ease 0.05s both; }
+    .fu2 { animation: fadeUp 1s ease 0.2s  both; }
+    .fu3 { animation: fadeUp 1s ease 0.35s both; }
+    .fu4 { animation: fadeUp 1s ease 0.5s  both; }
+    .fu5 { animation: fadeUp 1s ease 0.65s both; }
+
+    /* Scroll pulse */
+    @keyframes scrollPulse { 0%,100% { opacity: 0.2; } 50% { opacity: 0.9; } }
+    .scroll-pulse { animation: scrollPulse 2.8s ease-in-out infinite; }
+
+    /* Nav link underline */
+    .nav-lnk { position: relative; transition: color 0.3s; }
+    .nav-lnk::after { content:''; position:absolute; bottom:-3px; left:0; width:0; height:1px; background:#fff; transition: width 0.35s ease; }
+    .nav-lnk:hover::after, .nav-lnk.active::after { width: 100%; }
+    .nav-lnk:hover { color: #fff !important; }
+
+    /* Button hovers */
+    .btn-gold  { transition: background 0.3s, color 0.3s; }
+    .btn-gold:hover  { background: #e0e0e0 !important; color: #000 !important; }
+    .btn-ghost { transition: background 0.3s, color 0.3s, border-color 0.3s; }
+    .btn-ghost:hover { background: #fff !important; color: #000 !important; border-color: #fff !important; }
+    .btn-gold-ol { transition: background 0.3s, color 0.3s; }
+    .btn-gold-ol:hover { background: #fff !important; color: #000 !important; }
+
+    /* Card hover */
+    .event-card { transition: border-color 0.4s ease; cursor: pointer; }
+    .event-card:hover { border-color: rgba(255,255,255,0.5) !important; }
+    .card-img-inner { transition: transform 0.65s ease; }
+    .event-card:hover .card-img-inner { transform: scale(1.045); }
+
+    /* Play button */
+    .play-btn { transition: background 0.3s, border-color 0.3s, transform 0.3s; }
+    .play-btn:hover { background: rgba(255,255,255,0.35) !important; border-color: #fff !important; transform: scale(1.1); }
+
+    /* Preview mini card hover */
+    .mini-card { transition: border-color 0.4s; cursor: pointer; }
+    .mini-card:hover { border-color: rgba(255,255,255,0.45) !important; }
+    .mini-card-img { transition: transform 0.55s ease; }
+    .mini-card:hover .mini-card-img { transform: scale(1.04); }
+
+    /* Footer link hover */
+    .ftr-lnk { transition: color 0.3s; }
+    .ftr-lnk:hover { color: #fff !important; }
+    
+    /* Input Autofill fix */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 30px #0A0A0A inset !important;
+        -webkit-text-fill-color: white !important;
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ─── CONSTANTS ─────────────────────────────── */
+const G = '#fff';
+
+const EVENTS = [
+  {
+    id: 'autumn-feast',
+    title: 'Autumn Feast',
+    sub: 'A Luxury Dining Experience',
+    cat: 'Exclusive Dining',
+    date: 'Friday, 6 November 2026',
+    loc: 'Secluded Surrey Location',
+    locDetail: 'Disclosed Upon Booking',
+    dur: '1 Evening',
+    size: 'Up to 16 Guests',
+    inc: 'Five-Course Dinner & Fine Wines',
+    price: '300',
+    badge: 'Limited Places',
+    badgeColor: 'rgba(255,255,255,0.08)',
+    badgeTxt: '#fff',
+    badgeBorder: 'rgba(255,255,255,0.45)',
+    desc: 'Gather around the table in a quintessentially British setting as the season turns. A beautifully curated evening for Driving Performance guests to unwind, reflect on the extraordinary events of the year, and celebrate the memories made — over a five-course dinner with exceptional wines and fine company.',
+    grad: 'linear-gradient(160deg,#0a0a08 0%,#141210 50%,#0a0a08 100%)',
+    bgWord: 'FEAST',
+    img: 'pub 1.jpg',
+  },
+  {
+    id: 'ice',
+    title: 'Ice Driving',
+    sub: 'Arctic Finland',
+    cat: 'Winter Experience',
+    date: '26 Feb — 1 Mar 2027',
+    loc: 'Kuusamo, Finland',
+    dur: '4 Days / 3 Nights',
+    size: 'Up to 8 Guests',
+    inc: '5-Star Lodge & All Transfers',
+    price: '6,095',
+    badge: 'Available Now',
+    badgeColor: 'rgba(255,255,255,0.08)',
+    badgeTxt: '#fff',
+    badgeBorder: 'rgba(255,255,255,0.45)',
+    desc: 'Master the art of vehicle control on a frozen lake deep in the Arctic wilderness. Guided by expert instructors, experience the thrill of ice driving before retreating to a private five-star lodge for exclusive evening hospitality.',
+    grad: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
+    bgWord: 'ICE',
+    img: 'ice driving 1.jpg',
+    packages: [
+      { label: '1 Driver', price: '6,095.00' },
+      { label: '1 Driver & 1 Non-Driver', price: '8,095.00' },
+      { label: '2 Drivers', price: '11,950.00' },
+    ],
+  },
+  {
+    id: 'monaco',
+    title: 'Monaco Grand Prix',
+    sub: '2027 Season',
+    cat: 'Premier Event',
+    date: 'May 2027',
+    loc: 'Monaco, Principality',
+    dur: '4 Days / 5 Nights',
+    size: 'Up to 12 Guests',
+    inc: 'Superyacht & VIP Access',
+    price: '12,500',
+    badge: 'Selling Fast',
+    badgeColor: 'rgba(255,255,255,0.08)',
+    badgeTxt: '#fff',
+    badgeBorder: 'rgba(255,255,255,0.45)',
+    desc: 'The jewel of the global social calendar. Experience the weekend from a private superyacht moored in the legendary harbour, complete with exclusive VIP access, premium hospitality, and an invitation to an intimate evening reception.',
+    grad: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
+    bgWord: 'MCO',
+    img: 'Monaco 1.jpg',
+  },
+  {
+    id: 'goodwood',
+    title: 'Goodwood Revival',
+    sub: '2027 Edition',
+    cat: 'Heritage & Culture',
+    date: 'September 2027',
+    loc: 'Goodwood, West Sussex',
+    dur: '3 Days / 3 Nights',
+    size: 'Up to 20 Guests',
+    inc: 'Country House Hotel & VIP',
+    price: '2,200',
+    badge: 'Early Access',
+    badgeColor: 'rgba(255,255,255,0.08)',
+    badgeTxt: '#fff',
+    badgeBorder: 'rgba(255,255,255,0.45)',
+    desc: 'Step back into a golden era of vintage glamour and automotive heritage. Experience the world\'s greatest historic celebration through our exclusive access — private grandstand hospitality, VIP enclosures, and a curated weekend in the English countryside.',
+    grad: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
+    bgWord: 'GDW',
+    img: 'Revival 1.jpg',
+  },
+];
+
+/* ─── NAV ────────────────────────────────────── */
+function Navbar({ page, setPage, scrolled }) {
+  return (
+    <nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+      height: 88,
+      background: scrolled ? 'rgba(0,0,0,0.93)' : 'transparent',
+      backdropFilter: scrolled ? 'blur(18px)' : 'none',
+      borderBottom: scrolled ? '1px solid rgba(255,255,255,0.055)' : '1px solid transparent',
+      transition: 'background 0.5s, border-color 0.5s, backdrop-filter 0.5s',
+      display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center',
+      padding: '0 64px',
+    }}>
+      {/* Left: empty spacer to balance the logo */}
+      <div />
+
+      {/* Centre: nav links */}
+      <div style={{ display: 'flex', gap: 48 }}>
+        {[['Home','home'],['Our Events','events'],['Contact','contact']].map(([label, id]) => (
+          <button key={id} onClick={() => setPage(id)}
+            className={`nav-lnk ${page === id ? 'active' : page.startsWith('event') && id === 'events' ? 'active' : ''}`}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              fontFamily: 'inherit', fontSize: 12, fontWeight: 400,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              color: (page === id || (page.startsWith('event') && id === 'events')) ? '#fff' : 'rgba(255,255,255,0.7)',
+            }}
+          >{label}</button>
+        ))}
+      </div>
+
+      {/* Right: logo */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={() => setPage('home')} style={{
+          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+          display: 'flex', alignItems: 'center',
+        }}>
+          <DPLogo height={128} />
+        </button>
+      </div>
+    </nav>
+  );
+}
+
+/* ─── EYEBROW ────────────────────────────────── */
+const Eyebrow = ({ children }) => (
+  <span style={{
+    display: 'block', fontSize: 11, fontWeight: 500,
+    letterSpacing: '0.52em', textTransform: 'uppercase',
+    color: '#fff', marginBottom: 18,
+  }}>{children}</span>
+);
+
+/* ─── DP MONOGRAM LOGO ───────────────────────── */
+function DPLogo({ height = 40, opacity = 1 }) {
+  return (
+    <img
+      src="logo.png"
+      alt="Driving Performance"
+      style={{ 
+        height, 
+        width: 'auto', 
+        display: 'block', 
+        opacity,
+        filter: 'grayscale(100%)' 
+      }}
+    />
+  );
+}
+
+/* ─── GOLD LINE ──────────────────────────────── */
+const GoldLine = ({ center }) => (
+  <div style={{
+    width: 36, height: 1, background: G,
+    margin: center ? '0 auto 28px' : '0 0 28px',
+  }} />
+);
+
+/* ─── MARQUEE ────────────────────────────────── */
+const items = ['Ice Driving','✦','Monaco Grand Prix','✦','Goodwood Revival','✦','Exclusive Access','✦','Premium Hospitality','✦','Global Destinations','✦'];
+function Marquee() {
+  const doubled = [...items, ...items];
+  return (
+    <div style={{
+      overflow: 'hidden',
+      borderTop: '1px solid rgba(255,255,255,0.05)',
+      borderBottom: '1px solid rgba(255,255,255,0.05)',
+      padding: '17px 0', background: '#000',
+    }}>
+      <div className="marquee-run" style={{ display: 'flex', gap: 72, whiteSpace: 'nowrap' }}>
+        {doubled.map((t, i) => (
+          <span key={i} style={{
+            flexShrink: 0, fontSize: 11, fontWeight: t === '✦' ? 400 : 300,
+            letterSpacing: '0.42em', textTransform: 'uppercase',
+            color: t === '✦' ? G : 'rgba(255,255,255,0.4)',
+          }}>{t}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── HOMEPAGE ───────────────────────────────── */
+function HomePage({ setPage }) {
+  return (
+    <div style={{ background: '#000' }}>
+
+      {/* ── HERO ── */}
+      <section style={{
+        position: 'relative', height: '100vh', minHeight: 700,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+      }}>
+        <div className="grid-tex" style={{ position: 'absolute', inset: 0 }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse 90% 65% at 50% 52%, rgba(255,255,255,0.04) 0%, transparent 68%)',
+        }} />
+        {/* DP monogram watermark */}
+        <div style={{
+          position: 'absolute', bottom: '4%', right: '-1%',
+          pointerEvents: 'none', userSelect: 'none',
+        }}>
+          <DPLogo height={Math.min(340, window.innerWidth * 0.28)} color="#fff" opacity={0.028} />
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: 940, padding: '0 40px' }}>
+          <p className="fu1" style={{
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.58em',
+            textTransform: 'uppercase', color: '#fff', marginBottom: 32,
+          }}>Exclusive Global Experiences</p>
+
+          {/* Typography Wrapper to match widths perfectly */}
+          <div style={{ display: 'inline-block', textAlign: 'center' }}>
+            <h1 className="fu2" style={{
+              fontSize: 'clamp(24px, 3.8vw, 52px)', fontWeight: 100,
+              textTransform: 'uppercase', lineHeight: 0.95, marginBottom: 4,
+              display: 'flex', justifyContent: 'space-between'
+            }}>
+              {'DRIVING'.split('').map((char, i) => <span key={i}>{char}</span>)}
+            </h1>
+            <h1 className="fu3" style={{
+              fontSize: 'clamp(24px, 3.8vw, 52px)', fontWeight: 200,
+              letterSpacing: '0.14em', textTransform: 'uppercase',
+              lineHeight: 0.95, color: '#fff', marginBottom: 44,
+              marginRight: '-0.14em'
+            }}>PERFORMANCE</h1>
+          </div>
+
+          <div className="fu3" style={{
+            width: 1, height: 52,
+            background: `linear-gradient(to bottom,${G},transparent)`,
+            margin: '0 auto 44px',
+          }} />
+
+          <p className="fu4" style={{
+            fontSize: 15, fontWeight: 300, letterSpacing: '0.055em',
+            color: 'rgba(255,255,255,0.72)', maxWidth: 490, margin: '0 auto 52px', lineHeight: 1.95,
+          }}>
+            We architect the world's most exclusive experiences — blending unparalleled global access with uncompromising five-star hospitality.
+          </p>
+
+          <div className="fu5" style={{ display: 'flex', justifyContent: 'center' }}>
+            <button onClick={() => setPage('events')} className="btn-gold" style={{
+              background: G, color: '#000', border: 'none',
+              padding: '15px 44px', fontSize: 12, fontWeight: 600,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}>Explore Events</button>
+          </div>
+        </div>
+
+        {/* scroll cue */}
+        <div className="scroll-pulse" style={{
+          position: 'absolute', bottom: 38, left: '50%', transform: 'translateX(-50%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+        }}>
+          <div style={{ width: 1, height: 48, background: `linear-gradient(to bottom,${G},transparent)` }} />
+          <span style={{ fontSize: 10, letterSpacing: '0.45em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)' }}>Scroll</span>
+        </div>
+      </section>
+
+      <Marquee />
+
+      {/* ── ABOUT + STATS ── */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '108px 64px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 88, alignItems: 'center' }}>
+        <div>
+          <Eyebrow>Who We Are</Eyebrow>
+          <h2 style={{ fontSize: 'clamp(28px,3vw,42px)', fontWeight: 100, letterSpacing: '0.14em', textTransform: 'uppercase', lineHeight: 1.28, marginBottom: 26 }}>
+            Experiences at the<br />Pinnacle of Luxury
+          </h2>
+          <GoldLine />
+          <p style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.72)', lineHeight: 1.95, marginBottom: 14 }}>
+            Driving Performance is not a travel agency. We are architects of unforgettable moments — blending unparalleled access to global events with uncompromising five-star hospitality.
+          </p>
+          <p style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.72)', lineHeight: 1.95, marginBottom: 40 }}>
+            From private yacht charters to VIP enclosures at the world's most prestigious events, we handle every detail so you can simply experience.
+          </p>
+          <button onClick={() => setPage('events')} className="btn-gold-ol" style={{
+            background: 'transparent', color: '#fff',
+            border: `1px solid ${G}`, padding: '13px 34px',
+            fontSize: 12, fontWeight: 400, letterSpacing: '0.3em',
+            textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit',
+          }}>View All Events</button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+          {[['50+','Years of Experience in Designing & Delivering Luxury Experiences'],['20','Guests Maximum Per Event, Ensuring Bespoke & Luxury Standards at Every Moment'],['4','Scheduled Events Per Year'],['1','Goal on Every Event. Sign Up to Find Out.']].map(([n, l]) => (
+            <div key={l} style={{ background: '#0C0C0C', border: '1px solid rgba(255,255,255,0.045)', padding: '40px 30px' }}>
+              <div style={{ fontSize: 42, fontWeight: 100, color: '#fff', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: 10 }}>{n}</div>
+              <div style={{ fontSize: 11, fontWeight: 400, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.52)' }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── VIDEO ── */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '0 64px 110px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 52 }}>
+          <Eyebrow>Our Story</Eyebrow>
+          <h2 style={{ fontSize: 'clamp(24px,2.8vw,36px)', fontWeight: 100, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 18 }}>
+            Experience the Difference
+          </h2>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.58)', letterSpacing: '0.06em' }}>
+            What sets Driving Performance apart from every other luxury event company.
+          </p>
+        </div>
+
+        {/* 16:9 container */}
+        <div style={{ position: 'relative', width: '100%', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', lineHeight: 0 }}>
+          <video
+            controls
+            style={{ width: '100%', display: 'block', background: '#000' }}
+          >
+            <source src="Driving Perfomance - Final Version.mp4" type="video/mp4" />
+          </video>
+        </div>
+      </section>
+
+      {/* ── FEATURED EVENTS PREVIEW (Only shows first 3 on Homepage) ── */}
+      <section style={{ background: '#080808', borderTop: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '86px 64px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 52 }}>
+            <div>
+              <Eyebrow>Upcoming Events</Eyebrow>
+              <h2 style={{ fontSize: 'clamp(24px,2.8vw,36px)', fontWeight: 100, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Curated Experiences Await</h2>
+            </div>
+            <button onClick={() => setPage('events')} className="btn-ghost" style={{
+              background: 'transparent', color: '#fff',
+              border: '1px solid rgba(255,255,255,0.4)',
+              padding: '11px 28px', fontSize: 12, fontWeight: 400,
+              letterSpacing: '0.28em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}>View All</button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 2 }}>
+            {EVENTS.slice(0,3).map(ev => (
+              <div key={ev.id} className="mini-card" onClick={() => setPage('event-' + ev.id)}
+                style={{ background: '#0C0C0C', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                <div style={{ overflow: 'hidden' }}>
+                  <div className="mini-card-img" style={{
+                    height: 190, background: ev.grad, position: 'relative',
+                    backgroundImage: ev.img ? `url("${ev.img}")` : undefined,
+                    backgroundSize: ev.img ? 'cover' : undefined,
+                    backgroundPosition: ev.img ? 'center' : undefined,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {!ev.img && <div className="grid-tex" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />}
+                    {ev.img && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%)' }} />}
+                    {!ev.img && <span style={{ fontSize: 66, fontWeight: 100, color: 'rgba(255,255,255,0.035)', letterSpacing: '0.1em', textTransform: 'uppercase', userSelect: 'none' }}>{ev.bgWord}</span>}
+                  </div>
+                </div>
+                <div style={{ padding: '22px 24px 26px' }}>
+                  <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.42em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', marginBottom: 7 }}>{ev.cat}</p>
+                  <h3 style={{ fontSize: 17, fontWeight: 200, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>{ev.title}</h3>
+                  <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.53)', letterSpacing: '0.04em' }}>From £{ev.price} per person</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Footer setPage={setPage} />
+    </div>
+  );
+}
+
+/* ─── EVENT CARD ─────────────────────────────── */
+function EventCard({ ev, setPage }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <article
+      className="event-card"
+      onClick={() => setPage('event-' + ev.id)}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: '#0A0A0A',
+        border: `1px solid ${hov ? 'rgba(255,255,255,0.48)' : 'rgba(255,255,255,0.055)'}`,
+        display: 'flex', flexDirection: 'column',
+      }}
+    >
+      {/* Image area */}
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+        <div className="card-img-inner" style={{
+          aspectRatio: '16/10', background: ev.grad,
+          backgroundImage: ev.img ? `url("${ev.img}")` : undefined,
+          backgroundSize: ev.img ? 'cover' : undefined,
+          backgroundPosition: ev.img ? 'center' : undefined,
+          position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {!ev.img && <div className="grid-tex" style={{ position: 'absolute', inset: 0 }} />}
+          {ev.img && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.32) 100%)' }} />}
+          {/* thin corner brackets */}
+          {[{top:16,left:16},{top:16,right:16},{bottom:16,left:16},{bottom:16,right:16}].map((pos,i) => (
+            <div key={i} style={{
+              position:'absolute', ...pos, width:18, height:18,
+              borderTop: (i<2) ? `1px solid rgba(255,255,255,0.38)` : 'none',
+              borderBottom: (i>=2) ? `1px solid rgba(255,255,255,0.38)` : 'none',
+              borderLeft: (i===0||i===2) ? `1px solid rgba(255,255,255,0.38)` : 'none',
+              borderRight: (i===1||i===3) ? `1px solid rgba(255,255,255,0.38)` : 'none',
+            }} />
+          ))}
+          {!ev.img && <span style={{
+            position: 'absolute', fontSize: 84, fontWeight: 100,
+            color: 'rgba(255,255,255,0.032)', letterSpacing: '0.12em',
+            textTransform: 'uppercase', userSelect: 'none',
+          }}>{ev.bgWord}</span>}
+          {!ev.img && <span style={{ position:'relative', fontSize: 11, fontWeight: 400, letterSpacing: '0.38em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.38)' }}>
+            Image Placeholder
+          </span>}
+        </div>
+        {/* badge */}
+        <span style={{
+          position: 'absolute', top: 16, left: 16,
+          background: ev.badgeColor, color: ev.badgeTxt,
+          border: `1px solid ${ev.badgeBorder}`,
+          fontSize: 10, fontWeight: 500, letterSpacing: '0.32em',
+          textTransform: 'uppercase', padding: '5px 13px',
+        }}>{ev.badge}</span>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '32px 34px 38px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.42em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' }}>{ev.cat}</span>
+          <span style={{ fontSize: 11, fontWeight: 300, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.46)' }}>{ev.date}</span>
+        </div>
+
+        <h2 style={{ fontSize: 23, fontWeight: 100, letterSpacing: '0.14em', textTransform: 'uppercase', lineHeight: 1.2, marginBottom: 5 }}>
+          {ev.title}
+        </h2>
+        <span style={{ display: 'block', fontSize: 12, fontWeight: 300, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.48)', marginBottom: 18 }}>
+          {ev.sub}
+        </span>
+
+        <p style={{ fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.68)', lineHeight: 1.95, marginBottom: 26, flex: 1 }}>
+          {ev.desc}
+        </p>
+
+        {/* details */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '18px 0', marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 11 }}>
+          {[['Location',ev.loc],['Duration',ev.dur],['Group Size',ev.size],['Includes',ev.inc]].map(([k,v]) => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: '0.26em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.46)' }}>{k}</span>
+              <span style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.82)', letterSpacing: '0.04em' }}>{v}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* price + CTA */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <span style={{ display: 'block', fontSize: 10, fontWeight: 400, letterSpacing: '0.38em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
+              {ev.price === 'POA' ? 'Price' : 'From'}
+            </span>
+            {ev.price === 'POA' ? (
+              <span style={{ fontSize: 28, fontWeight: 100, color: '#fff', letterSpacing: '0.02em' }}>POA</span>
+            ) : (
+              <span style={{ fontSize: 28, fontWeight: 100, color: '#fff', letterSpacing: '0.02em' }}>
+                <sup style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.7)', verticalAlign: 'super' }}>£</sup>{ev.price}
+              </span>
+            )}
+          </div>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setPage('event-' + ev.id); }}
+            className="btn-gold" style={{
+            background: G, color: '#000', border: 'none',
+            padding: '13px 28px', fontSize: 11, fontWeight: 600,
+            letterSpacing: '0.32em', textTransform: 'uppercase',
+            cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+          }}>{ev.id === 'bespoke' ? 'Enquire Now' : 'View Details'}</button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/* ─── EVENTS PAGE ────────────────────────────── */
+function EventsPage({ setPage }) {
+  // Ensure we scroll to the top when this page loads
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  return (
+    <div style={{ background: '#000' }}>
+      {/* page header */}
+      <header style={{ position: 'relative', padding: '155px 64px 80px', textAlign: 'center', overflow: 'hidden' }}>
+        <div className="grid-tex" style={{ position: 'absolute', inset: 0 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 75% 55% at 50% 50%, rgba(255,255,255,0.035) 0%, transparent 68%)' }} />
+        {/* huge faint bg text */}
+        <span style={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          fontSize: 'clamp(102px,18vw,222px)', fontWeight: 100,
+          color: 'rgba(255,255,255,0.018)', letterSpacing: '0.15em',
+          textTransform: 'uppercase', userSelect: 'none', pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+        }}>EVENTS</span>
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <Eyebrow>Exclusively Curated</Eyebrow>
+          <h1 style={{ fontSize: 'clamp(44px,7.5vw,90px)', fontWeight: 100, letterSpacing: '0.38em', textTransform: 'uppercase', marginBottom: 26 }}>
+            Our Events
+          </h1>
+          <GoldLine center />
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.62)', letterSpacing: '0.06em', maxWidth: 440, margin: '0 auto', lineHeight: 1.85 }}>
+            Extraordinary experiences, meticulously curated for those who demand the very best.
+          </p>
+        </div>
+      </header>
+
+      {/* 2x2 grid */}
+      <section style={{ maxWidth: 1340, margin: '0 auto', padding: '48px 64px 100px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 3 }}>
+          {EVENTS.map(ev => <EventCard key={ev.id} ev={ev} setPage={setPage} />)}
+        </div>
+      </section>
+
+      {/* why us */}
+      <section style={{ background: '#080808', borderTop: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '84px 64px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
+          <Eyebrow>The Driving Performance Difference</Eyebrow>
+          <h2 style={{ fontSize: 'clamp(22px,2.8vw,34px)', fontWeight: 100, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 60 }}>
+            Why Our Guests Return
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 2 }}>
+            {[
+              ['01','Unrivalled Access','Private enclosures, VIP suites, and behind-the-scenes access unavailable to the public.'],
+              ['02','Bespoke Itineraries','Every experience tailored precisely to your preferences, from accommodation to exclusive itinerary activities.'],
+              ['03','Expert Guides','World-class concierges and industry insiders accompany you throughout every event.'],
+              ['04','Seamless Logistics','Private transfers, five-star hotels, and concierge support from enquiry to departure.'],
+            ].map(([n,t,d]) => (
+              <div key={n} style={{ background: '#0C0C0C', border: '1px solid rgba(255,255,255,0.045)', padding: '38px 26px' }}>
+                <div style={{ fontSize: 36, fontWeight: 100, color: 'rgba(255,255,255,0.35)', lineHeight: 1, marginBottom: 22 }}>{n}</div>
+                <h3 style={{ fontSize: 13, fontWeight: 400, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 14, color: '#fff' }}>{t}</h3>
+                <p style={{ fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.56)', lineHeight: 1.88 }}>{d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Footer setPage={setPage} />
+    </div>
+  );
+}
+
+/* ─── EVENT DETAIL PAGE ──────────────────────── */
+function EventDetail({ ev, setPage }) {
+  // Ensure we scroll to the top when this page loads
+  useEffect(() => { window.scrollTo(0, 0); }, [ev]);
+
+  const defaultPkg = ev.packages ? ev.packages[0] : null;
+  const [selectedPkg, setSelectedPkg] = useState(defaultPkg);
+  const [basketAdded, setBasketAdded] = useState(false);
+
+  const handleAddToBasket = () => {
+    setBasketAdded(true);
+    setTimeout(() => setBasketAdded(false), 3000);
+  };
+
+  const displayPrice = ev.packages ? selectedPkg.price : ev.price;
+
+  return (
+    <div style={{ background: '#000', minHeight: '100vh', paddingBottom: 100 }}>
+      {/* Immersive Hero */}
+      <header style={{ position: 'relative', height: '65vh', minHeight: 500, display: 'flex', alignItems: 'flex-end', padding: '80px 64px', overflow: 'hidden' }}>
+        <div className="grid-tex" style={{ position: 'absolute', inset: 0 }} />
+        <div style={{ position: 'absolute', inset: 0, background: ev.grad, opacity: 0.6 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 0%, #000 100%)' }} />
+
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1200, width: '100%', margin: '0 auto' }}>
+          <span style={{ display: 'block', fontSize: 12, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', marginBottom: 16 }}>{ev.cat}</span>
+          <div style={{ marginBottom: 12 }}>
+            <h1 style={{ fontSize: ev.id === 'ice' ? 'clamp(26px, 3.8vw, 52px)' : 'clamp(40px, 6vw, 80px)', fontWeight: 100, letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>{ev.title}</h1>
+          </div>
+          <p style={{ fontSize: 20, fontWeight: 300, color: '#fff', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{ev.sub}</p>
+        </div>
+      </header>
+
+      {/* Content Area */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 80 }}>
+        
+        {/* Left Column: Itinerary & Details */}
+        <div>
+          {/* Back Button */}
+          <button onClick={() => setPage('events')} style={{
+            background: 'transparent', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.35)',
+            padding: '10px 20px', fontSize: 11, fontWeight: 500, letterSpacing: '0.2em', textTransform: 'uppercase',
+            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 44, fontFamily: 'inherit',
+            transition: 'all 0.3s'
+          }} 
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#fff'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; }}>
+            <span style={{ fontSize: 16, marginTop: -2 }}>←</span> Return to Events
+          </button>
+
+          <h2 style={{ fontSize: 26, fontWeight: 200, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 32 }}>About The Experience</h2>
+          <p style={{ fontSize: 16, fontWeight: 300, color: 'rgba(255,255,255,0.8)', lineHeight: 1.9, marginBottom: 24 }}>{ev.desc}</p>
+          <p style={{ fontSize: 16, fontWeight: 300, color: 'rgba(255,255,255,0.8)', lineHeight: 1.9, marginBottom: 60 }}>This highly exclusive itinerary is strictly limited to up to 16 guests, ensuring an intimate and highly personalised environment from arrival to departure.</p>
+
+          <h2 style={{ fontSize: 26, fontWeight: 200, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 32 }}>Itinerary Highlights</h2>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {[
+              'Private VIP transfers and welcome reception upon arrival.', 
+              'Exclusive access to premium enclosures and private hospitality suites.', 
+              'Five-star accommodation and curated evening dining experiences.', 
+              'Dedicated concierge and expert hosts on hand 24/7.'
+            ].map((item, i) => (
+              <li key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                <span style={{ color: '#fff', fontSize: 14, marginTop: 4 }}>✦</span>
+                <span style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Right Column: Image + Sticky Booking Card */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {ev.img && (
+          <img src={ev.img} alt={ev.title} style={{ width: '100%', display: 'block', objectFit: 'cover', marginBottom: 0 }} />
+        )}
+        <div style={{ position: 'sticky', top: 140, background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.08)', padding: 40, height: 'fit-content' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
+            <div>
+              <span style={{ display: 'block', fontSize: 12, fontWeight: 400, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>Reserve Your Place</span>
+              <span style={{ fontSize: 34, fontWeight: 100, color: '#fff', letterSpacing: '0.02em' }}>
+                <sup style={{ fontSize: 18, fontWeight: 300, color: 'rgba(255,255,255,0.7)', verticalAlign: 'super' }}>£</sup>{displayPrice}
+              </span>
+            </div>
+          </div>
+
+          {/* Package selector — Ice Driving only */}
+          {ev.packages && (
+            <div style={{ marginBottom: 28 }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>Select Package</label>
+              <div style={{ position: 'relative' }}>
+                <select
+                  value={selectedPkg.label}
+                  onChange={(e) => {
+                    const pkg = ev.packages.find(p => p.label === e.target.value);
+                    setSelectedPkg(pkg);
+                    setBasketAdded(false);
+                  }}
+                  style={{
+                    width: '100%', background: '#111', border: '1px solid rgba(255,255,255,0.35)',
+                    color: '#fff', padding: '13px 16px', fontSize: 14, fontWeight: 300,
+                    outline: 'none', appearance: 'none', borderRadius: 0, cursor: 'pointer',
+                    fontFamily: 'inherit', letterSpacing: '0.04em',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#fff'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.35)'}
+                >
+                  {ev.packages.map(pkg => (
+                    <option key={pkg.label} value={pkg.label} style={{ color: '#000', background: '#fff' }}>
+                      {pkg.label} — £{pkg.price}
+                    </option>
+                  ))}
+                </select>
+                {/* chevron */}
+                <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>▾</div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24 }}>
+            {[['Dates', ev.date], ['Location', ev.locDetail || ev.loc], ['Duration', ev.dur], ['Availability', ev.badge]].map(([k,v]) => (
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 12, fontWeight: 400, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>{k}</span>
+                <span style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.95)', textAlign: 'right' }}>{v}</span>
+              </div>
+            ))}
+          </div>
+
+          {ev.packages ? (
+            <button onClick={handleAddToBasket} className="btn-gold" style={{
+              width: '100%', background: basketAdded ? 'rgba(255,255,255,0.95)' : '#fff', color: '#000', border: 'none',
+              padding: '18px 0', fontSize: 12, fontWeight: 600,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.3s',
+            }}>{basketAdded ? '✓  Added to Basket' : 'Add to Basket'}</button>
+          ) : (
+            <button className="btn-gold" style={{
+              width: '100%', background: '#fff', color: '#000', border: 'none',
+              padding: '18px 0', fontSize: 12, fontWeight: 600,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}>Proceed to Booking</button>
+          )}
+
+          <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 16, letterSpacing: '0.05em' }}>Secure payment processing module placeholder.</p>
+        </div>
+        </div>
+      </section>
+
+      <Footer setPage={setPage} />
+    </div>
+  );
+}
+
+/* ─── BESPOKE EVENTS PAGE ────────────────────── */
+function BespokePage({ setPage }) {
+  const [submitted, setSubmitted] = useState(false);
+
+  // Ensure we scroll to the top when this page loads
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // In production, this intercepts the click and sends data to Formspree/Backend
+    setSubmitted(true);
+  };
+
+  return (
+    <div style={{ background: '#000', minHeight: '100vh', paddingBottom: 100 }}>
+      {/* Header */}
+      <header style={{ position: 'relative', height: '55vh', minHeight: 450, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 64px', overflow: 'hidden', textAlign: 'center' }}>
+        <div className="grid-tex" style={{ position: 'absolute', inset: 0 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 70%)' }} />
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 800, width: '100%', margin: '0 auto' }}>
+          <Eyebrow>From The Ground Up</Eyebrow>
+          <h1 style={{ fontSize: 'clamp(36px, 5.5vw, 72px)', fontWeight: 100, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 24 }}>Bespoke Events</h1>
+          <GoldLine center />
+          <p style={{ fontSize: 16, fontWeight: 300, color: 'rgba(255,255,255,0.7)', lineHeight: 1.9, margin: '0 auto' }}>
+            We understand that true luxury is having exactly what you want, when you want it. Our bespoke service allows us to architect experiences tailored entirely to your vision.
+          </p>
+        </div>
+      </header>
+
+      {/* Form Section */}
+      <section style={{ maxWidth: 700, margin: '0 auto', padding: '24px 64px 64px' }}>
+        
+        {/* Left-aligned Back Button */}
+        <div style={{ marginBottom: 32, textAlign: 'left' }}>
+          <button onClick={() => setPage('events')} style={{
+            background: 'transparent', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.35)',
+            padding: '10px 20px', fontSize: 11, fontWeight: 500, letterSpacing: '0.2em', textTransform: 'uppercase',
+            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10, fontFamily: 'inherit',
+            transition: 'all 0.3s'
+          }} 
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#fff'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; }}>
+            <span style={{ fontSize: 16, marginTop: -2 }}>←</span> Return to Events
+          </button>
+        </div>
+        
+        {submitted ? (
+          <div style={{ padding: '80px 40px', background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+            <h3 style={{ fontSize: 26, fontWeight: 100, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>Thank You</h3>
+            <div style={{ width: 36, height: 1, background: '#fff', margin: '0 auto 24px' }} />
+            <p style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.04em' }}>One of our team will be in touch shortly to discuss your bespoke experience.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.06)', padding: '54px 64px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>Full Name</label>
+                <input required type="text" style={{ 
+                  width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.35)', 
+                  color: '#fff', padding: '10px 0', fontSize: 16, fontWeight: 300, outline: 'none', transition: 'border-color 0.3s' 
+                }} onFocus={(e) => e.target.style.borderColor = '#fff'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.35)'} />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>Email Address</label>
+                <input required type="email" style={{ 
+                  width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.35)', 
+                  color: '#fff', padding: '10px 0', fontSize: 16, fontWeight: 300, outline: 'none', transition: 'border-color 0.3s' 
+                }} onFocus={(e) => e.target.style.borderColor = '#fff'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.35)'} />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>Phone Number</label>
+                <div style={{ display: 'flex', gap: 16 }}>
+                  <select style={{ 
+                    background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.35)', 
+                    color: '#fff', padding: '10px 0', fontSize: 16, fontWeight: 300, outline: 'none', width: 95, cursor: 'pointer', appearance: 'none', borderRadius: 0
+                  }} onFocus={(e) => e.target.style.borderColor = '#fff'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.35)'}>
+                    <option value="+44" style={{ color: '#000' }}>+44 (UK)</option>
+                    <option value="+1" style={{ color: '#000' }}>+1 (US)</option>
+                    <option value="+33" style={{ color: '#000' }}>+33 (FR)</option>
+                    <option value="+49" style={{ color: '#000' }}>+49 (DE)</option>
+                    <option value="+971" style={{ color: '#000' }}>+971 (UAE)</option>
+                    <option value="+61" style={{ color: '#000' }}>+61 (AU)</option>
+                  </select>
+                  <input required type="tel" style={{ 
+                    flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.35)', 
+                    color: '#fff', padding: '10px 0', fontSize: 16, fontWeight: 300, outline: 'none', transition: 'border-color 0.3s' 
+                  }} onFocus={(e) => e.target.style.borderColor = '#fff'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.35)'} />
+                </div>
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>Event Details & Vision</label>
+                <textarea required rows="5" style={{ 
+                  width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.35)', 
+                  color: '#fff', padding: '16px', fontSize: 16, fontWeight: 300, outline: 'none', transition: 'border-color 0.3s', resize: 'vertical' 
+                }} onFocus={(e) => e.target.style.borderColor = '#fff'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.35)'} placeholder="Please describe your ideal experience, preferred destinations, group size, and any specific requirements..."></textarea>
+              </div>
+
+              <button type="submit" className="btn-gold" style={{
+                background: G, color: '#000', border: 'none',
+                padding: '18px 0', fontSize: 12, fontWeight: 600,
+                letterSpacing: '0.35em', textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'inherit', marginTop: 16
+              }}>Submit Enquiry</button>
+
+            </div>
+          </form>
+        )}
+      </section>
+
+      <Footer setPage={setPage} />
+    </div>
+  );
+}
+
+/* ─── CONTACT PAGE ───────────────────────────── */
+function ContactPage({ setPage }) {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  return (
+    <div style={{ background: '#000', minHeight: '100vh', paddingBottom: 100 }}>
+      {/* Header */}
+      <header style={{ position: 'relative', height: '50vh', minHeight: 420, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 64px', overflow: 'hidden', textAlign: 'center' }}>
+        <div className="grid-tex" style={{ position: 'absolute', inset: 0 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 70%)' }} />
+        <span style={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          fontSize: 'clamp(82px,15vw,202px)', fontWeight: 100,
+          color: 'rgba(255,255,255,0.018)', letterSpacing: '0.15em',
+          textTransform: 'uppercase', userSelect: 'none', pointerEvents: 'none', whiteSpace: 'nowrap',
+        }}>CONTACT</span>
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 700, width: '100%', margin: '0 auto' }}>
+          <Eyebrow>Get In Touch</Eyebrow>
+          <h1 style={{ fontSize: 'clamp(32px, 5vw, 64px)', fontWeight: 100, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 24 }}>Contact Us</h1>
+          <GoldLine center />
+          <p style={{ fontSize: 16, fontWeight: 300, color: 'rgba(255,255,255,0.7)', lineHeight: 1.9, margin: '0 auto' }}>
+            Whether you have a question about our events, want to discuss a bespoke experience, or simply wish to learn more — we would love to hear from you.
+          </p>
+        </div>
+      </header>
+
+      {/* Contact Info + Image */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '56px 64px 64px', display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 80, alignItems: 'start' }}>
+
+        {/* Left: contact details */}
+        <div>
+          <h2 style={{ fontSize: 20, fontWeight: 200, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 28 }}>Our Details</h2>
+          <GoldLine />
+          {[
+            ['Email', 'enquiries@drivingperformanceltd.com'],
+            ['Phone', '+44 (0)3330 900911'],
+            ['Address', '13 Hanover Square\nLondon, W1S 1HN'],
+            ['Hours', 'Mon – Fri, 9:00 – 18:00 GMT'],
+          ].map(([k, v]) => (
+            <div key={k} style={{ marginBottom: 28 }}>
+              <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: 7 }}>{k}</p>
+              <p style={{ fontSize: 15, fontWeight: 300, color: 'rgba(255,255,255,0.95)', letterSpacing: '0.04em', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{v}</p>
+            </div>
+          ))}
+
+          <div style={{ marginTop: 44, paddingTop: 32, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: 18 }}>Looking for something bespoke?</p>
+            <button onClick={() => setPage('event-bespoke')} className="btn-ghost" style={{
+              background: 'transparent', color: '#fff',
+              border: '1px solid rgba(255,255,255,0.48)',
+              padding: '13px 28px', fontSize: 12, fontWeight: 400,
+              letterSpacing: '0.28em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}>Bespoke Enquiry</button>
+          </div>
+        </div>
+
+        {/* Right: Google Map */}
+        <div style={{ border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', minHeight: 420 }}>
+          <iframe
+            title="Driving Performance Location"
+            src="https://www.google.com/maps?q=13+Hanover+Square,+London,+W1S+1HN&output=embed"
+            width="100%"
+            height="420"
+            style={{ display: 'block', border: 'none', filter: 'grayscale(100%) invert(90%) contrast(90%)' }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      </section>
+
+      <Footer setPage={setPage} />
+    </div>
+  );
+}
+
+/* ─── FOOTER ─────────────────────────────────── */
+function Footer({ setPage }) {
+  return (
+    <footer style={{ padding: '68px 64px 36px', borderTop: '1px solid rgba(255,255,255,0.055)' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 64, marginBottom: 52 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+              <DPLogo height={28} color="#fff" opacity={0.75} />
+              <span style={{ fontSize: 13, fontWeight: 200, letterSpacing: '0.38em', textTransform: 'uppercase' }}>
+                Driving&nbsp;Performance
+              </span>
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.56)', maxWidth: 260, lineHeight: 1.9 }}>
+              Curating the world's most exclusive luxury experiences for discerning guests since 2012.
+            </p>
+          </div>
+          {[
+            ['Navigate', [['Home','home'],['Our Events','events'],['Contact','contact']]],
+            ['Events',   [['Ice Driving','event-ice'],['Monaco Grand Prix','event-monaco'],['Goodwood Revival','event-goodwood'],['Autumn Feast','event-autumn-feast']]],
+          ].map(([head, links]) => (
+            <div key={head}>
+              <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.42em', textTransform: 'uppercase', color: '#fff', marginBottom: 22 }}>{head}</p>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 13 }}>
+                {links.map(([label, pg]) => (
+                  <li key={label}>
+                    <button onClick={() => setPage(pg)} className="ftr-lnk" style={{
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                      fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.56)',
+                      fontFamily: 'inherit', letterSpacing: '0.05em',
+                    }}>{label}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div style={{ paddingTop: 26, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>© 2026 Driving Performance. All rights reserved.</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>Premium Global Experiences</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ─── APP ────────────────────────────────────── */
+function App() {
+  const [page, setPage] = useState('home');
+  const [scrolled, setScrolled] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onScroll = () => setScrolled(el.scrollTop > 50);
+    el.addEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const navTo = (p) => {
+    setPage(p);
+    if (ref.current) ref.current.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Basic Routing Logic
+  let content;
+  if (page === 'home') {
+    content = <HomePage setPage={navTo} />;
+  } else if (page === 'events') {
+    content = <EventsPage setPage={navTo} />;
+  } else if (page === 'contact') {
+    content = <ContactPage setPage={navTo} />;
+  } else if (page === 'event-bespoke') {
+    content = <BespokePage setPage={navTo} />;
+  } else if (page.startsWith('event-')) {
+    const evId = page.replace('event-', '');
+    const ev = EVENTS.find(e => e.id === evId);
+    content = ev ? <EventDetail ev={ev} setPage={navTo} /> : <EventsPage setPage={navTo} />;
+  }
+
+  return (
+    <div ref={ref} style={{
+      height: '100vh', overflowY: 'auto',
+      background: '#000', color: '#fff',
+      fontFamily: "'Montserrat','Helvetica Neue',Arial,sans-serif",
+      fontWeight: 300,
+    }}>
+      <Navbar page={page} setPage={navTo} scrolled={scrolled} />
+      {content}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
