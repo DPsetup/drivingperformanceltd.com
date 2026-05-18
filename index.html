@@ -897,7 +897,6 @@ function EventDetail({ ev, setPage }) {
               </div>
             ) : (
               <>
-                <h3 style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>Monaco Grand Prix</h3>
                 <h2 style={{ fontSize: 22, fontWeight: 200, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 32 }}>Make an Enquiry</h2>
                 <form onSubmit={handleEnquirySubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {[['name','Full Name','text',true],['email','Email Address','email',true],['phone','Phone Number','tel',false]].map(([field, label, type, required]) => (
