@@ -120,7 +120,7 @@ const EVENTS = [
     date: '26 Feb — 1 Mar 2027',
     loc: 'Kuusamo, Finland',
     dur: '4 Days / 3 Nights',
-    size: 'Up to 8 Guests',
+    size: 'Up to 16 Guests',
     inc: '5-Star Lodge & All Transfers',
     price: '6,095',
     badge: 'Available Now',
@@ -131,6 +131,7 @@ const EVENTS = [
     grad: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
     bgWord: 'ICE',
     img: 'ice driving 1.jpg',
+    images: ['ice driving 1.jpg', 'CRP1.jpg', 'ice road.jpg', 'Picture 21.png'],
     limitedNote: 'This highly exclusive itinerary is strictly limited to up to 16 guests, ensuring an intimate and highly personalised environment from arrival to departure.',
     bullets: [
       'Private VIP transfers and welcome reception upon arrival.',
@@ -149,10 +150,10 @@ const EVENTS = [
     title: 'Monaco Grand Prix',
     sub: '2027 Season',
     cat: 'Premier Event',
-    date: 'May 2027',
+    date: '4 – 6 June 2027',
     loc: 'Monaco, Principality',
     dur: '4 Days / 5 Nights',
-    size: 'Up to 12 Guests',
+    size: 'Bespoke',
     inc: 'Superyacht & VIP Access',
     price: 'POA',
     enquire: true,
@@ -160,11 +161,11 @@ const EVENTS = [
     badgeColor: 'rgba(255,255,255,0.08)',
     badgeTxt: '#fff',
     badgeBorder: 'rgba(255,255,255,0.45)',
-    desc: 'The jewel of the global social calendar. Experience the weekend from a private superyacht moored in the legendary harbour, complete with exclusive VIP access, premium hospitality, and an invitation to an intimate evening reception.',
+    desc: 'The jewel of the global social calendar. Experience the weekend from a private superyacht moored in the legendary harbour, or from a luxury hotel balcony, the choice is yours — complete with exclusive VIP access, premium hospitality, and an invitation to an intimate evening reception.',
     grad: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
     bgWord: 'MCO',
     img: 'Monaco 1.jpg',
-    limitedNote: 'This highly exclusive itinerary is strictly limited to up to 16 guests, ensuring an intimate and highly personalised environment from arrival to departure.',
+    limitedNote: 'This highly exclusive itinerary is strictly limited, ensuring an intimate and highly personalised environment from arrival to departure. Enquire now to bespoke the best possible experience for you.',
     bullets: [
       'Private VIP transfers and welcome reception upon arrival.',
       'Exclusive access to premium enclosures and private hospitality suites.',
@@ -179,7 +180,7 @@ const EVENTS = [
     cat: 'Heritage & Culture',
     date: 'September 2027',
     loc: 'Goodwood, West Sussex',
-    dur: '3 Days / 3 Nights',
+    dur: '1 Day / 1 Night',
     size: 'Up to 20 Guests',
     inc: 'Country House Hotel & VIP',
     price: 'POA',
@@ -698,6 +699,10 @@ function EventDetail({ ev, setPage }) {
   const [selectedPkg, setSelectedPkg] = useState(defaultPkg);
   const [basketAdded, setBasketAdded] = useState(false);
   const [showEnquiry, setShowEnquiry] = useState(false);
+  const imgs = ev.images || (ev.img ? [ev.img] : []);
+  const [imgIdx, setImgIdx] = useState(0);
+  const prevImg = (e) => { e.stopPropagation(); setImgIdx(i => (i - 1 + imgs.length) % imgs.length); };
+  const nextImg = (e) => { e.stopPropagation(); setImgIdx(i => (i + 1) % imgs.length); };
   const [enquiryForm, setEnquiryForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [enquirySent, setEnquirySent] = useState(false);
 
@@ -777,8 +782,44 @@ function EventDetail({ ev, setPage }) {
 
         {/* Right Column: Image + Sticky Booking Card */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-        {ev.img && (
-          <img src={ev.img} alt={ev.title} style={{ width: '100%', display: 'block', objectFit: 'cover', marginBottom: 0 }} />
+        {imgs.length > 0 && (
+          <div style={{ position: 'relative', overflow: 'hidden', marginBottom: 0 }}>
+            <img src={imgs[imgIdx]} alt={ev.title} style={{ width: '100%', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} />
+            {imgs.length > 1 && (
+              <>
+                <button onClick={prevImg} style={{
+                  position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.3)',
+                  color: '#fff', width: 36, height: 36, cursor: 'pointer',
+                  fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(0,0,0,0.85)'}
+                onMouseLeave={e => e.currentTarget.style.background='rgba(0,0,0,0.55)'}
+                >&#8592;</button>
+                <button onClick={nextImg} style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.3)',
+                  color: '#fff', width: 36, height: 36, cursor: 'pointer',
+                  fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(0,0,0,0.85)'}
+                onMouseLeave={e => e.currentTarget.style.background='rgba(0,0,0,0.55)'}
+                >&#8594;</button>
+                <div style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6 }}>
+                  {imgs.map((_, i) => (
+                    <button key={i} onClick={e => { e.stopPropagation(); setImgIdx(i); }} style={{
+                      width: i === imgIdx ? 20 : 6, height: 6,
+                      background: i === imgIdx ? '#fff' : 'rgba(255,255,255,0.4)',
+                      border: 'none', cursor: 'pointer', padding: 0,
+                      transition: 'width 0.3s, background 0.3s',
+                    }} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         )}
         <div style={{ position: 'sticky', top: 140, background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.08)', padding: 40, height: 'fit-content' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
